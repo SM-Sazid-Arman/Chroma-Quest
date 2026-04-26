@@ -3,39 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chroma Quest</title>
+    <title>Chroma Quest — Color Maze Puzzle Game</title>
+
+    <!-- ── SEO Meta Tags ── -->
+    <meta name="description" content="Chroma Quest is a fast-paced color maze puzzle game. Navigate a maze and collect numbered coins in the right color order — across three thrilling difficulty levels. Play free in your browser!">
+    <meta name="keywords" content="chroma quest, color maze game, browser puzzle game, arcade maze, number collect game, free game, bengali game">
+    <meta name="author" content="SM Sazid Arman">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sm-sazid-arman.github.io/Chroma-Quest/">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="Chroma Quest — Color Maze Puzzle Game">
+    <meta property="og:description" content="Navigate the maze, collect colored numbered coins in order, and beat the clock! Three difficulty levels: Easy, Medium, and Hard.">
+    <meta property="og:url"         content="https://github.com/SM-Sazid-Arman/Chroma-Quest">
+    <meta property="og:site_name"   content="Chroma Quest">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary">
+    <meta name="twitter:title"       content="Chroma Quest">
+    <meta name="twitter:description" content="Navigate the maze, collect colored numbered coins in order, and beat the clock!">
+
+    <!-- Bengali font support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-color: #1e1e2f;
-            --panel-bg: #2a2a40;
-            --text-color: #f0f0f0;
-            --red-coin: #ff3366;
-            --blue-coin: #33ccff;
-            --green-coin: #33ff33;
-            --white-coin: #ffffff;
-            --wall-color: #ff9900; /* Vibrant orange */
-            --player-color: #ffcc00;
-            --shadow: 0 4px 15px rgba(0,0,0,0.4);
-            
-            /* Responsive Grid Settings */
+            --bg-color:    #1e1e2f;
+            --panel-bg:    #2a2a40;
+            --text-color:  #f0f0f0;
+            --red-coin:    #ff3366;
+            --blue-coin:   #33ccff;
+            --green-coin:  #33ff33;
+            --white-coin:  #ffffff;
+            --wall-color:  #ff9900;
+            --player-color:#ffcc00;
+            --accent:      #a78bfa;
+            --shadow:      0 4px 15px rgba(0,0,0,0.4);
+
             --tile-size: 72px;
-            --vp-cols: 8; /* Desktop: wide rectangle */
+            --vp-cols: 8;
             --vp-rows: 5;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        
+
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'Noto Sans Bengali', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
 
-        /* Layout */
+        /* ── Layout ── */
         #game-container {
             display: flex;
             flex-direction: column;
@@ -62,7 +86,8 @@
             flex-wrap: wrap;
         }
 
-        .score-item { display: flex; flex-direction: column; align-items: center; }
+        .score-item  { display: flex; flex-direction: column; align-items: center; }
+        .score-label { font-size: 12px; color: #aaa; letter-spacing: 0.5px; }
         .score-value { font-size: 22px; }
 
         #main-area {
@@ -74,7 +99,7 @@
             max-width: 1000px;
         }
 
-        /* Player Viewport */
+        /* ── Viewport / Camera ── */
         #viewport {
             width: calc(var(--tile-size) * var(--vp-cols));
             height: calc(var(--tile-size) * var(--vp-rows));
@@ -82,30 +107,25 @@
             border-radius: 16px;
             overflow: hidden;
             position: relative;
-            box-shadow: var(--shadow), 0 0 20px rgba(255, 255, 255, 0.05);
+            box-shadow: var(--shadow), 0 0 20px rgba(255,255,255,0.05);
             border: 4px solid var(--panel-bg);
-            touch-action: none; /* prevent scroll-interference for swipe */
+            touch-action: none;
         }
 
         #camera {
             position: absolute;
-            width: calc(var(--tile-size) * 16);
-            height: calc(var(--tile-size) * 16);
+            /* width / height set dynamically via JS based on GRID_SIZE */
             transition: transform 0.2s ease-out;
-            
-            /* The 16x16 Box Outline */
             border: 4px solid var(--wall-color);
             box-sizing: content-box;
             background-color: #1a1a24;
-            
-            /* Visible Grid */
-            background-image: 
+            background-image:
                 linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
             background-size: var(--tile-size) var(--tile-size);
         }
 
-        /* Entities */
+        /* ── Entities ── */
         .entity {
             position: absolute;
             width: var(--tile-size);
@@ -130,17 +150,14 @@
             color: #000;
             box-shadow: 0 0 15px currentColor;
             animation: float 2s infinite ease-in-out;
-            transition: transform 0.1s;
         }
-        
+
         .coin.white {
-            color: #000;
             background: var(--white-coin);
             box-shadow: 0 0 25px var(--white-coin);
             animation: pulse-white 1s infinite alternate;
         }
 
-        /* Player positioning wrapper — JS moves this via transform */
         #player-pos {
             position: absolute;
             left: 0; top: 0;
@@ -151,7 +168,6 @@
             pointer-events: none;
         }
 
-        /* Visual player — only animates locally (bounce) */
         #player {
             width: 100%;
             height: 100%;
@@ -161,13 +177,8 @@
             animation: bounce 0.4s infinite alternate;
         }
 
-        /* Side Panel (Mini-map & Controls) */
-        #side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
+        /* ── Side Panel ── */
+        #side-panel { display: flex; flex-direction: column; gap: 15px; align-items: center; }
 
         #minimap {
             width: 160px;
@@ -178,130 +189,232 @@
             box-shadow: var(--shadow);
         }
 
-        #controls { display: none; }
-
+        /* ── Buttons ── */
         .btn {
             background: var(--panel-bg);
-            border: 2px solid #444;
+            border: 2px solid #4a4a6a;
             color: white;
             border-radius: 12px;
-            font-size: 24px;
+            font-size: 16px;
+            font-family: inherit;
             cursor: pointer;
-            box-shadow: 0 4px 0 #1a1a2e;
-            transition: all 0.1s;
-            width: 60px;
-            height: 60px;
-            display: flex;
+            box-shadow: 0 4px 0 #14142a;
+            transition: all 0.12s;
+            padding: 10px 22px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
         }
-        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1a1a2e; }
+        .btn:hover  { background: #35355a; border-color: #666; }
+        .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #14142a; }
 
-        /* Overlays */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s;
+        .btn-primary {
+            background: linear-gradient(135deg, #6d28d9, #a78bfa);
+            border-color: #7c3aed;
+            box-shadow: 0 4px 0 #3b0764;
         }
-        .overlay.active { visibility: visible; opacity: 1; }
-        
-        .modal {
-            background: var(--panel-bg);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            max-width: 400px;
-            animation: popIn 0.3s ease-out;
-        }
-        
-        .modal h1 { margin-bottom: 15px; font-size: 32px; }
-        .modal p { margin-bottom: 25px; line-height: 1.5; color: #ccc; }
-        .modal-btns { display: flex; gap: 15px; justify-content: center; }
-        .modal .btn { width: auto; height: auto; padding: 10px 20px; font-size: 18px; }
+        .btn-primary:hover  { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
+        .btn-primary:active { box-shadow: 0 1px 0 #3b0764; }
 
+        /* ── Fixed HUD buttons ── */
         #btn-mute {
-            position: absolute;
-            top: 20px; right: 20px;
-            z-index: 500;
-            background: var(--panel-bg);
-            border: none;
-            color: white;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
+            position: fixed; top: 14px; right: 14px; z-index: 500;
+            background: var(--panel-bg); border: none; color: white;
+            width: 42px; height: 42px; border-radius: 50%;
+            font-size: 18px; cursor: pointer; box-shadow: var(--shadow);
+            display: flex; align-items: center; justify-content: center;
         }
 
         #btn-pause {
-            position: absolute;
-            top: 20px; right: 65px;
-            z-index: 500;
-            background: var(--panel-bg);
-            border: none;
-            color: white;
-            padding: 10px 13px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: none; /* shown only during gameplay */
+            position: fixed; top: 14px; right: 64px; z-index: 500;
+            background: var(--panel-bg); border: none; color: white;
+            width: 42px; height: 42px; border-radius: 50%;
+            font-size: 15px; cursor: pointer; box-shadow: var(--shadow);
+            display: none; align-items: center; justify-content: center;
         }
-        #btn-pause.visible { display: block; }
+        #btn-pause.visible { display: flex; }
 
-        /* Animations */
-        @keyframes bounce { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-5px) scale(1.05); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes pulse-white { 0% { box-shadow: 0 0 10px #fff; } 100% { box-shadow: 0 0 30px #fff; transform: scale(1.1); } }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes screenShake { 0% { transform: translate(0); } 25% { transform: translate(-5px, 5px); } 50% { transform: translate(5px, -5px); } 75% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
-
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            :root { 
-                --tile-size: 58px;
-                --vp-cols: 5;
-                --vp-rows: 4;
-            }
-            #main-area { flex-direction: column; align-items: center; }
-            #scoreboard { font-size: 14px; padding: 10px; }
-            .score-value { font-size: 18px; }
-        }
-
-        /* Swipe hint on mobile */
+        /* ── Swipe hint ── */
         #swipe-hint {
             display: none;
-            position: absolute;
-            bottom: 6px;
-            left: 50%;
+            position: absolute; bottom: 6px; left: 50%;
             transform: translateX(-50%);
-            font-size: 11px;
-            color: rgba(255,255,255,0.35);
-            pointer-events: none;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
+            font-size: 11px; color: rgba(255,255,255,0.35);
+            pointer-events: none; letter-spacing: 0.5px; white-space: nowrap;
         }
+
+        /* ── Overlays ── */
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.88);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000;
+            visibility: hidden; opacity: 0;
+            transition: opacity 0.3s;
+            padding: 16px;
+        }
+        .overlay.active { visibility: visible; opacity: 1; }
+
+        .modal {
+            background: var(--panel-bg);
+            padding: 30px 32px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 12px 50px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.07);
+            max-width: 460px;
+            width: 100%;
+            animation: popIn 0.28s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h1 { margin-bottom: 10px; font-size: 28px; letter-spacing: -0.5px; }
+        .modal > p { margin-bottom: 16px; line-height: 1.65; color: #c0c0d8; font-size: 14.5px; }
+        .modal-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+
+        /* ── Language selector ── */
+        .lang-row {
+            display: flex; align-items: center; justify-content: flex-end;
+            gap: 8px; margin-bottom: 18px;
+        }
+        .lang-row label { font-size: 12px; color: #888; }
+        .lang-select {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f0f0f0;
+            border-radius: 8px; padding: 5px 10px;
+            font-size: 13px; font-family: inherit;
+            cursor: pointer; outline: none;
+            transition: border-color 0.2s;
+        }
+        .lang-select:focus { border-color: var(--accent); }
+        .lang-select option { background: #2a2a40; color: #fff; }
+
+        /* ── Controls info box ── */
+        .controls-box {
+            background: rgba(255,255,255,0.055);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 13.5px; color: #ccc; line-height: 2;
+            text-align: left;
+        }
+        .controls-box strong { color: #ffcc00; }
+
+        /* ── Level cards ── */
+        .level-cards {
+            display: flex; gap: 10px; margin: 16px 0 22px;
+            justify-content: center;
+        }
+
+        .level-card {
+            flex: 1; min-width: 90px;
+            background: rgba(255,255,255,0.04);
+            border: 2px solid rgba(255,255,255,0.09);
+            border-radius: 16px; padding: 18px 8px;
+            cursor: pointer; transition: all 0.18s;
+            position: relative; overflow: hidden;
+        }
+        .level-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, #a78bfa);
+            border-radius: 3px 3px 0 0;
+        }
+        .level-card:hover {
+            border-color: var(--card-accent, #a78bfa);
+            background: rgba(255,255,255,0.09);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .level-card:active { transform: translateY(0); }
+
+        .level-card.easy   { --card-accent: #4ade80; }
+        .level-card.medium { --card-accent: #facc15; }
+        .level-card.hard   { --card-accent: #f87171; }
+
+        .level-icon { font-size: 26px; margin-bottom: 8px; }
+        .level-name {
+            font-size: 16px; font-weight: 700; margin-bottom: 6px;
+            color: var(--card-accent, #fff);
+        }
+        .level-meta { font-size: 11.5px; color: #999; line-height: 1.6; }
+
+        /* ── Modal footer (GitHub link) ── */
+        .modal-footer {
+            margin-top: 20px; padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            font-size: 12.5px; color: #555;
+        }
+        .modal-footer a {
+            color: #666; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 5px;
+            transition: color 0.2s;
+        }
+        .modal-footer a:hover { color: #999; }
+        .modal-footer svg { flex-shrink: 0; }
+
+        /* ── Badge (level indicator during game) ── */
+        #level-badge {
+            position: fixed; top: 14px; left: 14px; z-index: 500;
+            background: var(--panel-bg);
+            border-radius: 20px; padding: 6px 12px;
+            font-size: 12px; color: #aaa; display: none;
+            box-shadow: var(--shadow);
+        }
+        #level-badge.visible { display: block; }
+        #level-badge span { color: var(--badge-color, #a78bfa); font-weight: 700; }
+
+        /* ── Animations ── */
+        @keyframes bounce      { 0%   { transform: translateY(0) scale(1); }    100% { transform: translateY(-5px) scale(1.05); } }
+        @keyframes float       { 0%,100% { transform: translateY(0); }          50%  { transform: translateY(-8px); } }
+        @keyframes pulse-white { 0%   { box-shadow: 0 0 10px #fff; }            100% { box-shadow: 0 0 30px #fff; transform: scale(1.1); } }
+        @keyframes popIn       { 0%   { transform: scale(0.85); opacity: 0; }  100% { transform: scale(1); opacity: 1; } }
+        @keyframes screenShake { 0%   { transform: translate(0); } 25% { transform: translate(-5px, 5px); } 50% { transform: translate(5px,-5px); } 75% { transform: translate(-5px,-5px); } 100% { transform: translate(0); } }
+
+        /* ── Responsive ── */
         @media (max-width: 768px) {
+            :root { --tile-size: 58px; --vp-cols: 5; --vp-rows: 4; }
+            #main-area { flex-direction: column; align-items: center; }
+            #scoreboard { font-size: 13px; padding: 8px 12px; gap: 10px; }
+            .score-value { font-size: 18px; }
+            .modal { padding: 22px 18px; }
+            .level-cards { gap: 8px; }
+            .level-card { padding: 14px 6px; }
+            .level-icon { font-size: 22px; }
+            .level-name { font-size: 14px; }
+            .level-meta { font-size: 11px; }
             #swipe-hint { display: block; }
         }
     </style>
 </head>
 <body>
 
-    <button id="btn-mute">🔊</button>
-    <button id="btn-pause" onclick="togglePause()">⏸</button>
+    <!-- ── HUD Buttons ── -->
+    <div id="level-badge">Level: <span id="badge-label">Hard</span></div>
+    <button id="btn-mute" title="Toggle sound">🔊</button>
+    <button id="btn-pause" onclick="togglePause()" title="Pause">⏸</button>
 
+    <!-- ── Game Area ── -->
     <div id="game-container">
         <header id="scoreboard">
-            <div class="score-item"><span style="color:#aaa;">TIME</span><span id="ui-time" class="score-value">1:00</span></div>
-            <div class="score-item"><span style="color:#aaa;">TARGET</span><span id="ui-target" class="score-value" style="text-shadow: 0 0 10px currentColor;">RED</span></div>
-            <div class="score-item"><span style="color:#aaa;">NEXT</span><span id="ui-next" class="score-value">1</span></div>
-            <div class="score-item"><span style="color:#aaa;">SCORE</span><span id="ui-score" class="score-value">0</span></div>
+            <div class="score-item">
+                <span class="score-label" data-i18n="timeLabel">TIME</span>
+                <span id="ui-time" class="score-value">1:00</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label" data-i18n="targetLabel">TARGET</span>
+                <span id="ui-target" class="score-value" style="text-shadow: 0 0 10px currentColor;">RED</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label" data-i18n="nextLabel">NEXT</span>
+                <span id="ui-next" class="score-value">1</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label" data-i18n="scoreLabel">SCORE</span>
+                <span id="ui-score" class="score-value">0</span>
+            </div>
         </header>
 
         <main id="main-area">
@@ -309,497 +422,752 @@
                 <div id="camera">
                     <div id="player-pos"><div id="player"></div></div>
                 </div>
-                <span id="swipe-hint">↑ ↓ ← → swipe to move</span>
+                <span id="swipe-hint" data-i18n="swipeHint">↑ ↓ ← → swipe to move</span>
             </div>
-            
             <aside id="side-panel">
                 <canvas id="minimap" width="160" height="160"></canvas>
             </aside>
         </main>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         OVERLAY 1: Briefing / How to Play
+    ════════════════════════════════════════════════════════════════ -->
     <div class="overlay active" id="briefing">
         <div class="modal">
-            <h1>Chroma Quest</h1>
-            <p>Collect the <strong>target color</strong> coins in order <strong>1 → 10</strong>. Wrong coin = point penalty. White ⏱ coins add +5 seconds. You have <strong>60 seconds</strong> — go fast!</p>
-            <div style="background:rgba(255,255,255,0.06); border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:14px; color:#ddd; line-height:1.8; text-align:left;">
-                <div><strong style="color:#ffcc00;">📱 Mobile</strong> — Swipe on the game area to move</div>
-                <div><strong style="color:#ffcc00;">🖥 Desktop</strong> — Arrow keys or W A S D</div>
-                <div><strong style="color:#ffcc00;">⏸ Pause</strong> — Tap ⏸ button or press Escape</div>
+
+            <!-- Language selector -->
+            <div class="lang-row">
+                <label for="lang-select" data-i18n="langLabel">Language</label>
+                <select id="lang-select" class="lang-select" onchange="setLang(this.value)">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="bn">🇧🇩 বাংলা</option>
+                </select>
             </div>
+
+            <h1 data-i18n="gameTitle">🎨 Chroma Quest</h1>
+
+            <p data-i18n="explain">
+                Navigate the maze and collect the <strong>target color</strong> coins <strong>in order, 1 to 10</strong>, one by one. Pick the correct color in the correct sequence before the timer runs out! Touching the wrong coin costs you points. White ⏱ coins grant extra time.
+            </p>
+
+            <div class="controls-box">
+                <div><strong data-i18n="ctrlMobileLabel">📱 Mobile</strong>&nbsp;— <span data-i18n="ctrlMobile">Swipe anywhere on the game screen to move</span></div>
+                <div><strong data-i18n="ctrlDesktopLabel">🖥 Desktop</strong>&nbsp;— <span data-i18n="ctrlDesktop">Use Arrow keys or W A S D to move</span></div>
+                <div><strong data-i18n="ctrlPauseLabel">⏸ Pause</strong>&nbsp;— <span data-i18n="ctrlPause">Tap the ⏸ button or press Escape</span></div>
+            </div>
+
             <div class="modal-btns">
-                <button class="btn" onclick="startGame()">Start Game</button>
+                <button class="btn btn-primary" onclick="showScreen('level-select')" data-i18n="nextBtn">Choose Level →</button>
+            </div>
+
+            <div class="modal-footer">
+                <a href="https://github.com/SM-Sazid-Arman/Chroma-Quest" target="_blank" rel="noopener noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                    View on GitHub
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         OVERLAY 2: Level Select
+    ════════════════════════════════════════════════════════════════ -->
+    <div class="overlay" id="level-select">
+        <div class="modal">
+            <h1 data-i18n="levelTitle">🎮 Choose Your Level</h1>
+            <p data-i18n="levelSubtitle">Pick a difficulty to start playing!</p>
+
+            <div class="level-cards">
+                <div class="level-card easy" onclick="selectLevel('easy')" role="button" tabindex="0" aria-label="Easy level">
+                    <div class="level-icon">🌿</div>
+                    <div class="level-name" data-i18n="easyName">Easy</div>
+                    <div class="level-meta" data-i18n="easyMeta">8×8 Maze<br>3 Minutes</div>
+                </div>
+                <div class="level-card medium" onclick="selectLevel('medium')" role="button" tabindex="0" aria-label="Medium level">
+                    <div class="level-icon">⚡</div>
+                    <div class="level-name" data-i18n="mediumName">Medium</div>
+                    <div class="level-meta" data-i18n="mediumMeta">10×10 Maze<br>2 Minutes</div>
+                </div>
+                <div class="level-card hard" onclick="selectLevel('hard')" role="button" tabindex="0" aria-label="Hard level">
+                    <div class="level-icon">🔥</div>
+                    <div class="level-name" data-i18n="hardName">Hard</div>
+                    <div class="level-meta" data-i18n="hardMeta">16×16 Maze<br>1 Minute</div>
+                </div>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn" onclick="showScreen('briefing')" data-i18n="backBtn">← Back</button>
+            </div>
+
+            <div class="modal-footer">
+                <a href="https://github.com/SM-Sazid-Arman/Chroma-Quest" target="_blank" rel="noopener noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         OVERLAY 3: Pause
+    ════════════════════════════════════════════════════════════════ -->
     <div class="overlay" id="pause-screen">
         <div class="modal">
-            <h1>Paused</h1>
+            <h1 data-i18n="pausedTitle">⏸ Paused</h1>
             <div class="modal-btns">
-                <button class="btn" onclick="togglePause()">Resume</button>
-                <button class="btn" onclick="setupRound()">Restart</button>
+                <button class="btn btn-primary" onclick="togglePause()" data-i18n="resumeBtn">Resume</button>
+                <button class="btn" onclick="setupRound()" data-i18n="restartBtn">Restart</button>
+                <button class="btn" onclick="goToMenu()" data-i18n="menuBtn">Menu</button>
             </div>
         </div>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         OVERLAY 4: Win
+    ════════════════════════════════════════════════════════════════ -->
     <div class="overlay" id="win-screen">
         <div class="modal">
-            <h1 style="color: var(--green-coin)">🏆 Victory!</h1>
-            <p>You collected all coins in time!</p>
-            <p style="font-size:28px; font-weight:bold; color:#ffcc00; margin-bottom:8px;">Score: <span id="win-score">0</span></p>
+            <h1 style="color:var(--green-coin)" data-i18n="winTitle">🏆 Victory!</h1>
+            <p data-i18n="winMsg">You collected all coins in time!</p>
+            <p style="font-size:26px; font-weight:bold; color:#ffcc00; margin-bottom:4px;">
+                <span data-i18n="scoreWord">Score</span>: <span id="win-score">0</span>
+            </p>
             <div class="modal-btns">
-                <button class="btn" onclick="setupRound()">Play Again</button>
-                <button class="btn" onclick="showScreen('briefing')">Exit</button>
+                <button class="btn btn-primary" onclick="showScreen('level-select')" data-i18n="playAgainBtn">Play Again</button>
+                <button class="btn" onclick="goToMenu()" data-i18n="exitBtn">Exit</button>
             </div>
         </div>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         OVERLAY 5: Lose
+    ════════════════════════════════════════════════════════════════ -->
     <div class="overlay" id="lose-screen">
         <div class="modal">
-            <h1 style="color: var(--red-coin)">⏰ Out of Time!</h1>
-            <p>Try moving faster next round.</p>
-            <p style="font-size:28px; font-weight:bold; color:#ffcc00; margin-bottom:8px;">Score: <span id="lose-score">0</span></p>
+            <h1 style="color:var(--red-coin)" data-i18n="loseTitle">⏰ Out of Time!</h1>
+            <p data-i18n="loseMsg">Try moving faster next round.</p>
+            <p style="font-size:26px; font-weight:bold; color:#ffcc00; margin-bottom:4px;">
+                <span data-i18n="scoreWord">Score</span>: <span id="lose-score">0</span>
+            </p>
             <div class="modal-btns">
-                <button class="btn" onclick="setupRound()">Try Again</button>
-                <button class="btn" onclick="showScreen('briefing')">Exit</button>
+                <button class="btn btn-primary" onclick="showScreen('level-select')" data-i18n="tryAgainBtn">Try Again</button>
+                <button class="btn" onclick="goToMenu()" data-i18n="exitBtn">Exit</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Game Constants & Configuration
-        const GRID_SIZE = 16;
-        
-        // Exact Hex values used for Canvas drawing (CSS var() doesn't work in canvas context)
-        const COLORS = [
-            { id: 'red', hex: '#ff3366' },
-            { id: 'blue', hex: '#33ccff' },
-            { id: 'green', hex: '#33ff33' }
-        ];
-
-        // Game State
-        let gameState = {
-            isRunning: false,
-            isPaused: false,
-            score: 0,
-            time: 60,
-            targetColor: null,
-            nextNumber: 1,
-            player: { x: 0, y: 0 },
-            map: [],
-            coins: [],
-            explored: [],
-            timerInterval: null,
-            minimapInterval: null
-        };
-
-        // Audio System — 100% synthesized, no file dependencies
-        let isMuted = false;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        // Unlock AudioContext on first user gesture (required by iOS/Android)
-        function unlockAudio() {
-            if (audioCtx.state !== 'running') {
-                audioCtx.resume().then(() => {
-                    // Play a 0-gain silent buffer to fully ungate iOS audio engine
-                    const buf = audioCtx.createBuffer(1, 1, 22050);
-                    const src = audioCtx.createBufferSource();
-                    src.buffer = buf;
-                    src.connect(audioCtx.destination);
-                    src.start(0);
-                });
-            }
+    /* ════════════════════════════════════════════════════════════════════
+       i18n — Bilingual text: English & Bengali
+    ════════════════════════════════════════════════════════════════════ */
+    const i18n = {
+        en: {
+            langLabel:       'Language',
+            gameTitle:       '🎨 Chroma Quest',
+            explain:         'Navigate the maze and collect the <strong>target color</strong> coins <strong>in order, 1 to 10</strong>, one by one. Pick the correct color in the correct sequence before the timer runs out! Touching the wrong coin costs you points. White ⏱ coins grant extra time.',
+            ctrlMobileLabel: '📱 Mobile',
+            ctrlMobile:      'Swipe anywhere on the game screen to move',
+            ctrlDesktopLabel:'🖥 Desktop',
+            ctrlDesktop:     'Use Arrow keys or W A S D to move',
+            ctrlPauseLabel:  '⏸ Pause',
+            ctrlPause:       'Tap the ⏸ button or press Escape',
+            nextBtn:         'Choose Level →',
+            levelTitle:      '🎮 Choose Your Level',
+            levelSubtitle:   'Pick a difficulty to start playing!',
+            easyName:        'Easy',
+            easyMeta:        '8×8 Maze<br>3 Minutes',
+            mediumName:      'Medium',
+            mediumMeta:      '10×10 Maze<br>2 Minutes',
+            hardName:        'Hard',
+            hardMeta:        '16×16 Maze<br>1 Minute',
+            backBtn:         '← Back',
+            timeLabel:       'TIME',
+            targetLabel:     'TARGET',
+            nextLabel:       'NEXT',
+            scoreLabel:      'SCORE',
+            scoreWord:       'Score',
+            pausedTitle:     '⏸ Paused',
+            resumeBtn:       'Resume',
+            restartBtn:      'Restart',
+            menuBtn:         'Menu',
+            winTitle:        '🏆 Victory!',
+            winMsg:          'You collected all coins in time!',
+            playAgainBtn:    'Play Again',
+            exitBtn:         'Exit',
+            loseTitle:       '⏰ Out of Time!',
+            loseMsg:         'Try moving faster next round.',
+            tryAgainBtn:     'Try Again',
+            swipeHint:       '↑ ↓ ← → swipe to move',
+            badgeLabels:     { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
+            badgeColors:     { easy: '#4ade80', medium: '#facc15', hard: '#f87171' }
+        },
+        bn: {
+            langLabel:       'ভাষা',
+            gameTitle:       '🎨 ক্রোমা কোয়েস্ট',
+            explain:         'গোলকধাঁধায় ঘুরে বেড়াও এবং নির্ধারিত রঙের কয়েনগুলো <strong>একে একে ১ থেকে ১০</strong> পর্যন্ত সঠিক ক্রমে সংগ্রহ করো। সময় শেষ হওয়ার আগেই সব কয়েন জমাও! ভুল কয়েন ছুঁলে পয়েন্ট কাটা যাবে। সাদা ⏱ কয়েন অতিরিক্ত সময় দেয়।',
+            ctrlMobileLabel: '📱 মোবাইল',
+            ctrlMobile:      'গেমের স্ক্রিনে সোয়াইপ করে চলো',
+            ctrlDesktopLabel:'🖥 ডেস্কটপ',
+            ctrlDesktop:     'অ্যারো কী অথবা W A S D দিয়ে চলো',
+            ctrlPauseLabel:  '⏸ পজ',
+            ctrlPause:       '⏸ বাটন চাপো অথবা Escape চাপো',
+            nextBtn:         'লেভেল বেছে নাও →',
+            levelTitle:      '🎮 লেভেল বেছে নাও',
+            levelSubtitle:   'তোমার পছন্দের কঠিনতা বেছে নাও!',
+            easyName:        'সহজ',
+            easyMeta:        '৮×৮ গোলকধাঁধা<br>৩ মিনিট',
+            mediumName:      'মাঝারি',
+            mediumMeta:      '১০×১০ গোলকধাঁধা<br>২ মিনিট',
+            hardName:        'কঠিন',
+            hardMeta:        '১৬×১৬ গোলকধাঁধা<br>১ মিনিট',
+            backBtn:         '← পিছনে',
+            timeLabel:       'সময়',
+            targetLabel:     'লক্ষ্য রঙ',
+            nextLabel:       'পরবর্তী',
+            scoreLabel:      'স্কোর',
+            scoreWord:       'স্কোর',
+            pausedTitle:     '⏸ পজ',
+            resumeBtn:       'চালু করো',
+            restartBtn:      'আবার শুরু',
+            menuBtn:         'মেনু',
+            winTitle:        '🏆 জয়!',
+            winMsg:          'সময়ের মধ্যে সব কয়েন জমিয়ে ফেলেছ!',
+            playAgainBtn:    'আবার খেলো',
+            exitBtn:         'বের হও',
+            loseTitle:       '⏰ সময় শেষ!',
+            loseMsg:         'পরের বার আরো দ্রুত চলার চেষ্টা করো।',
+            tryAgainBtn:     'আবার চেষ্টা করো',
+            swipeHint:       '↑ ↓ ← → সোয়াইপ করো',
+            badgeLabels:     { easy: 'সহজ', medium: 'মাঝারি', hard: 'কঠিন' },
+            badgeColors:     { easy: '#4ade80', medium: '#facc15', hard: '#f87171' }
         }
-        document.addEventListener('touchstart',  unlockAudio, { once: true });
-        document.addEventListener('pointerdown', unlockAudio, { once: true });
+    };
 
-        // Master gain — boosted on mobile where speakers are quieter
-        const masterGain = audioCtx.createGain();
-        masterGain.gain.value = ('ontouchstart' in window) ? 4.0 : 1.0;
-        masterGain.connect(audioCtx.destination);
+    let currentLang = 'en';
 
-        // Helper: play a single tone
-        function tone(freq, startTime, duration, vol, type, freqEnd) {
-            const osc  = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type || 'sine';
-            osc.frequency.setValueAtTime(freq, startTime);
-            if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, startTime + duration);
-            gain.gain.setValueAtTime(vol, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-        }
+    // Restore language from previous session immediately on load
+    (function () {
+        const saved = localStorage.getItem('chromaLang');
+        if (saved && i18n[saved]) setLang(saved);
+    })();
 
-        function playSound(type) {
-            if (isMuted) return;
-            if (audioCtx.state !== 'running') audioCtx.resume();
-            const t = audioCtx.currentTime;
-
-            if (type === 'coin') {
-                // Bright rising ding
-                tone(880,  t,       0.05, 0.3, 'sine');
-                tone(1320, t + 0.04, 0.12, 0.2, 'sine');
-            } else if (type === 'wrong') {
-                // Harsh descending buzz
-                tone(200, t,      0.08, 0.25, 'sawtooth', 60);
-                tone(120, t + 0.07, 0.12, 0.15, 'sawtooth', 40);
-            } else if (type === 'win') {
-                // Cheerful ascending fanfare: C E G C
-                const notes = [523, 659, 784, 1047];
-                notes.forEach((f, i) => tone(f, t + i * 0.13, 0.18, 0.28, 'sine'));
-                // Add a warm harmonic layer
-                tone(523, t, 0.55, 0.12, 'triangle');
-            } else if (type === 'lose') {
-                // Sad descending tones: G E C
-                const notes = [392, 330, 262];
-                notes.forEach((f, i) => tone(f, t + i * 0.18, 0.22, 0.25, 'sine'));
-                tone(130, t + 0.4, 0.3, 0.1, 'sawtooth', 80);
-            }
-        }
-
-        document.getElementById('btn-mute').addEventListener('click', (e) => {
-            isMuted = !isMuted;
-            e.target.innerText = isMuted ? '🔇' : '🔊';
+    function setLang(l) {
+        currentLang = l;
+        document.documentElement.lang = l;
+        localStorage.setItem('chromaLang', l);
+        const dict = i18n[l];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.dataset.i18n;
+            if (dict[key] !== undefined) el.innerHTML = dict[key];
         });
+        // Keep select in sync
+        document.getElementById('lang-select').value = l;
+    }
 
-        // Initialize / Map Generation
-        function setupRound() {
-            clearInterval(gameState.timerInterval);
-            clearInterval(gameState.minimapInterval);
-            document.getElementById('camera').querySelectorAll('.wall, .coin').forEach(e => e.remove());
+    /* ════════════════════════════════════════════════════════════════════
+       Level Configuration
+    ════════════════════════════════════════════════════════════════════ */
+    const LEVEL_CONFIG = {
+        easy:   { gridSize: 8,  time: 180, obstacles: 8  },
+        medium: { gridSize: 10, time: 120, obstacles: 18 },
+        hard:   { gridSize: 16, time: 60,  obstacles: 35 }
+    };
 
-            gameState = {
-                ...gameState,
-                isRunning: true, isPaused: false,
-                score: 0, time: 60, nextNumber: 1,
-                targetColor: COLORS[Math.floor(Math.random() * COLORS.length)],
-                map: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0)),
-                explored: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false)),
-                coins: []
-            };
+    let GRID_SIZE    = 16;
+    let currentLevel = 'hard';
 
-            generateSolvableMap();
-            placeCoins();
-            updateUI();
-            updateCamera();
-            showScreen('none');
-            document.getElementById('btn-pause').classList.add('visible');
-            document.getElementById('btn-pause').textContent = '⏸';
+    /* ════════════════════════════════════════════════════════════════════
+       Colors
+    ════════════════════════════════════════════════════════════════════ */
+    const COLORS = [
+        { id: 'red',   hex: '#ff3366' },
+        { id: 'blue',  hex: '#33ccff' },
+        { id: 'green', hex: '#33ff33' }
+    ];
 
-            gameState.timerInterval = setInterval(gameTick, 1000);
-            gameState.minimapInterval = setInterval(drawMinimap, 200); 
-        }
+    /* ════════════════════════════════════════════════════════════════════
+       Game State
+    ════════════════════════════════════════════════════════════════════ */
+    let gameState = {
+        isRunning: false, isPaused: false,
+        score: 0, time: 60,
+        targetColor: null, nextNumber: 1,
+        player: { x: 0, y: 0 },
+        map: [], coins: [], explored: [],
+        timerInterval: null, minimapInterval: null
+    };
 
-        function generateSolvableMap() {
-            let valid = false;
-            while (!valid) {
-                for(let y=0; y<GRID_SIZE; y++) for(let x=0; x<GRID_SIZE; x++) gameState.map[y][x] = 0;
-                
-                // Reduced obstacles by 30% (from 50 to 35)
-                for (let i = 0; i < 35; i++) {
-                    gameState.map[Math.floor(Math.random() * GRID_SIZE)][Math.floor(Math.random() * GRID_SIZE)] = 1;
-                }
+    /* ════════════════════════════════════════════════════════════════════
+       Audio System — 100% synthesized, no file dependencies
+    ════════════════════════════════════════════════════════════════════ */
+    let isMuted = false;
+    const audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.value = ('ontouchstart' in window) ? 4.0 : 1.0;
+    masterGain.connect(audioCtx.destination);
 
-                let px, py;
-                do {
-                    px = Math.floor(Math.random() * GRID_SIZE);
-                    py = Math.floor(Math.random() * GRID_SIZE);
-                } while (gameState.map[py][px] === 1);
-                
-                gameState.player.x = px;
-                gameState.player.y = py;
-
-                // Validate connectivity (BFS)
-                let reachable = 0;
-                let q = [[px, py]];
-                let visited = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
-                visited[py][px] = true;
-
-                while (q.length > 0) {
-                    let [cx, cy] = q.shift();
-                    reachable++;
-                    [[0,1], [1,0], [0,-1], [-1,0]].forEach(([dx, dy]) => {
-                        let nx = cx + dx, ny = cy + dy;
-                        if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && !visited[ny][nx] && gameState.map[ny][nx] === 0) {
-                            visited[ny][nx] = true;
-                            q.push([nx, ny]);
-                        }
-                    });
-                }
-                
-                if (reachable > 150) {
-                    valid = true;
-                    for(let y=0; y<GRID_SIZE; y++) {
-                        for(let x=0; x<GRID_SIZE; x++) {
-                            if (!visited[y][x]) gameState.map[y][x] = 1; 
-                            if (gameState.map[y][x] === 1) renderEntity('wall', x, y);
-                        }
-                    }
-                }
-            }
-        }
-
-        function placeCoins() {
-            const place = (type, val, color) => {
-                let x, y;
-                do {
-                    x = Math.floor(Math.random() * GRID_SIZE);
-                    y = Math.floor(Math.random() * GRID_SIZE);
-                } while (gameState.map[y][x] === 1 || getCoinAt(x, y) || (x === gameState.player.x && y === gameState.player.y));
-                
-                let el = document.createElement('div');
-                el.className = `entity coin ${type === 'white' ? 'white' : ''}`;
-                
-                // Leverage CSS Calc for fluid responsive placement relative to tile size
-                el.style.left = `calc((var(--tile-size) * ${x}) + (var(--tile-size) * 0.2))`; 
-                el.style.top = `calc((var(--tile-size) * ${y}) + (var(--tile-size) * 0.2))`;
-                
-                if (type !== 'white') {
-                    el.style.backgroundColor = color.hex;
-                    el.style.color = '#000';
-                    el.innerText = val;
-                } else {
-                    el.innerText = '⏱';
-                }
-                
-                document.getElementById('camera').appendChild(el);
-                gameState.coins.push({ x, y, type, val, color, el, lastSeen: 0 });
-            };
-
-            COLORS.forEach(c => {
-                for (let i = 1; i <= 10; i++) place('color', i, c);
+    function unlockAudio() {
+        if (audioCtx.state !== 'running') {
+            audioCtx.resume().then(() => {
+                const buf = audioCtx.createBuffer(1, 1, 22050);
+                const src = audioCtx.createBufferSource();
+                src.buffer = buf; src.connect(audioCtx.destination); src.start(0);
             });
-            
-            let timeCoins = Math.floor(Math.random() * 3) + 3;
-            for (let i = 0; i < timeCoins; i++) place('white', null, null);
         }
+    }
+    document.addEventListener('touchstart',  unlockAudio, { once: true });
+    document.addEventListener('pointerdown', unlockAudio, { once: true });
 
-        function renderEntity(type, x, y) {
-            let el = document.createElement('div');
-            el.className = `entity ${type}`;
-            el.style.left = `calc(var(--tile-size) * ${x})`;
-            el.style.top = `calc(var(--tile-size) * ${y})`;
-            document.getElementById('camera').appendChild(el);
+    function tone(freq, startTime, dur, vol, type, freqEnd) {
+        const osc  = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, startTime + dur);
+        gain.gain.setValueAtTime(vol, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+        osc.connect(gain); gain.connect(masterGain);
+        osc.start(startTime); osc.stop(startTime + dur);
+    }
+
+    function playSound(type) {
+        if (isMuted) return;
+        if (audioCtx.state !== 'running') audioCtx.resume();
+        const t = audioCtx.currentTime;
+        if (type === 'coin') {
+            tone(880, t, 0.05, 0.3, 'sine');
+            tone(1320, t + 0.04, 0.12, 0.2, 'sine');
+        } else if (type === 'wrong') {
+            tone(200, t, 0.08, 0.25, 'sawtooth', 60);
+            tone(120, t + 0.07, 0.12, 0.15, 'sawtooth', 40);
+        } else if (type === 'win') {
+            [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.13, 0.18, 0.28, 'sine'));
+            tone(523, t, 0.55, 0.12, 'triangle');
+        } else if (type === 'lose') {
+            [392, 330, 262].forEach((f, i) => tone(f, t + i * 0.18, 0.22, 0.25, 'sine'));
+            tone(130, t + 0.4, 0.3, 0.1, 'sawtooth', 80);
         }
+    }
 
-        function gameTick() {
-            if (!gameState.isRunning || gameState.isPaused) return;
-            gameState.time--;
-            updateUI();
-            if (gameState.time <= 0) endGame(false);
-        }
+    document.getElementById('btn-mute').addEventListener('click', e => {
+        isMuted = !isMuted;
+        e.currentTarget.innerText = isMuted ? '🔇' : '🔊';
+    });
 
-        function getCoinAt(x, y) { return gameState.coins.find(c => c.x === x && c.y === y); }
+    /* ════════════════════════════════════════════════════════════════════
+       Overlay Management
+    ════════════════════════════════════════════════════════════════════ */
+    function showScreen(id) {
+        document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
+        if (id !== 'none') document.getElementById(id).classList.add('active');
+    }
 
-        function handleMove(dx, dy) {
-            if (!gameState.isRunning || gameState.isPaused) return;
-            
-            let nx = gameState.player.x + dx;
-            let ny = gameState.player.y + dy;
-
-            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && gameState.map[ny][nx] !== 1) {
-                gameState.player.x = nx;
-                gameState.player.y = ny;
-                updateCamera();
-                checkCollisions();
-            }
-        }
-
-        function checkCollisions() {
-            let coinIndex = gameState.coins.findIndex(c => c.x === gameState.player.x && c.y === gameState.player.y);
-            if (coinIndex > -1) {
-                let coin = gameState.coins[coinIndex];
-                if (coin.type === 'white') {
-                    gameState.time += 5;
-                    playSound('coin');
-                    removeCoin(coin, coinIndex);
-                } else {
-                    if (coin.color.id === gameState.targetColor.id) {
-                        if (coin.val === gameState.nextNumber) {
-                            gameState.score += coin.val * 2;
-                            gameState.nextNumber++;
-                            playSound('coin');
-                            removeCoin(coin, coinIndex);
-                            if (gameState.nextNumber > 10) endGame(true);
-                        } else {
-                            applyPenalty(coin.val);
-                        }
-                    } else {
-                        applyPenalty(coin.val);
-                    }
-                }
-                updateUI();
-            }
-        }
-
-        function applyPenalty(amount) {
-            gameState.score -= amount;
-            playSound('wrong');
-            document.getElementById('viewport').style.animation = 'none';
-            void document.getElementById('viewport').offsetWidth; 
-            document.getElementById('viewport').style.animation = 'screenShake 0.2s';
-        }
-
-        function removeCoin(coin, index) {
-            coin.el.remove();
-            gameState.coins.splice(index, 1);
-        }
-
-        function updateCamera() {
-            let pEl = document.getElementById('player-pos');
-            // Position the wrapper — the inner #player handles bounce animation independently
-            pEl.style.transform = `translate(
-                calc((var(--tile-size) * ${gameState.player.x}) + (var(--tile-size) * 0.15)), 
-                calc((var(--tile-size) * ${gameState.player.y}) + (var(--tile-size) * 0.15))
-            )`;
-
-            let camEl = document.getElementById('camera');
-            // Center camera using separate col/row vars (rectangular viewport)
-            camEl.style.transform = `translate(
-                calc((var(--vp-cols) * var(--tile-size) / 2) - ((${gameState.player.x} + 0.5) * var(--tile-size))), 
-                calc((var(--vp-rows) * var(--tile-size) / 2) - ((${gameState.player.y} + 0.5) * var(--tile-size)))
-            )`;
-        }
-
-        function updateUI() {
-            document.getElementById('ui-time').innerText = `${Math.floor(gameState.time / 60)}:${(gameState.time % 60).toString().padStart(2, '0')}`;
-            
-            let tgEl = document.getElementById('ui-target');
-            tgEl.innerText = gameState.targetColor ? gameState.targetColor.id.toUpperCase() : '';
-            tgEl.style.color = gameState.targetColor ? gameState.targetColor.hex : '';
-            
-            document.getElementById('ui-next').innerText = gameState.nextNumber > 10 ? '-' : gameState.nextNumber;
-            document.getElementById('ui-score').innerText = gameState.score;
-        }
-
-        function drawMinimap() {
-            const canvas = document.getElementById('minimap');
-            const ctx = canvas.getContext('2d');
-            const ms = 10; 
-            
-            ctx.fillStyle = '#000'; // Unexplored void
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            const px = gameState.player.x;
-            const py = gameState.player.y;
-            const now = Date.now();
-
-            // Reveal fog
-            for(let y = py-1; y <= py+2; y++) {
-                for(let x = px-1; x <= px+2; x++) {
-                    if (x>=0 && x<GRID_SIZE && y>=0 && y<GRID_SIZE) gameState.explored[y][x] = true;
-                }
-            }
-
-            // Draw Map
-            for(let y=0; y<GRID_SIZE; y++) {
-                for(let x=0; x<GRID_SIZE; x++) {
-                    if (gameState.explored[y][x]) {
-                        // Vibrant colors on minimap
-                        ctx.fillStyle = gameState.map[y][x] === 1 ? '#ff9900' : '#222'; 
-                        ctx.fillRect(x*ms, y*ms, ms, ms);
-                    }
-                }
-            }
-
-            // Draw Coins (with 5s memory)
-            gameState.coins.forEach(c => {
-                let isVisible = (c.x >= px-1 && c.x <= px+2 && c.y >= py-1 && c.y <= py+2);
-                if (isVisible) c.lastSeen = now;
-                
-                if (isVisible || (now - c.lastSeen < 5000)) {
-                    ctx.fillStyle = c.type === 'white' ? '#fff' : c.color.hex;
-                    ctx.beginPath();
-                    // Draw slightly larger coins for visibility
-                    ctx.arc(c.x*ms + ms/2, c.y*ms + ms/2, ms/2, 0, Math.PI*2); 
-                    ctx.fill();
-                }
-            });
-
-            // Draw Player — bright glowing yellow
-            ctx.shadowColor = '#ffff00';
-            ctx.shadowBlur = 8;
-            ctx.fillStyle = '#ffff00';
-            ctx.fillRect(px*ms + 1, py*ms + 1, ms-2, ms-2);
-            ctx.shadowBlur = 0;
-        }
-
-        function showScreen(id) {
-            document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
-            if (id !== 'none') document.getElementById(id).classList.add('active');
-        }
-
-        function startGame() {
-            unlockAudio();
-            setupRound();
-        }
-
-        function togglePause() {
-            if (!gameState.isRunning) return;
-            gameState.isPaused = !gameState.isPaused;
-            document.getElementById('btn-pause').textContent = gameState.isPaused ? '▶' : '⏸';
-            showScreen(gameState.isPaused ? 'pause-screen' : 'none');
-        }
-
-        function endGame(won) {
+    function goToMenu() {
+        // Stop any running game cleanly first
+        if (gameState.isRunning) {
             gameState.isRunning = false;
             clearInterval(gameState.timerInterval);
             clearInterval(gameState.minimapInterval);
-            document.getElementById('btn-pause').classList.remove('visible');
-            if (won) {
-                updateUI();
-                document.getElementById('win-score').innerText = gameState.score;
-                playSound('win');
-                showScreen('win-screen');
+        }
+        document.getElementById('btn-pause').classList.remove('visible');
+        document.getElementById('level-badge').classList.remove('visible');
+        showScreen('level-select');
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Level Selection → Game Start
+    ════════════════════════════════════════════════════════════════════ */
+    function selectLevel(level) {
+        unlockAudio();
+        currentLevel = level;
+        setupRound();
+    }
+
+    // Keyboard accessibility for level cards
+    document.querySelectorAll('.level-card').forEach(card => {
+        card.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') card.click();
+        });
+    });
+
+    /* ════════════════════════════════════════════════════════════════════
+       Game Initialisation
+    ════════════════════════════════════════════════════════════════════ */
+    function setupRound() {
+        clearInterval(gameState.timerInterval);
+        clearInterval(gameState.minimapInterval);
+        document.getElementById('camera').querySelectorAll('.wall, .coin').forEach(e => e.remove());
+
+        const cfg = LEVEL_CONFIG[currentLevel];
+        GRID_SIZE  = cfg.gridSize;
+
+        // Dynamically size the camera element to match the grid
+        const camEl = document.getElementById('camera');
+        camEl.style.width  = `calc(var(--tile-size) * ${GRID_SIZE})`;
+        camEl.style.height = `calc(var(--tile-size) * ${GRID_SIZE})`;
+
+        gameState = {
+            ...gameState,
+            isRunning: true, isPaused: false,
+            score: 0, time: cfg.time, nextNumber: 1,
+            targetColor: COLORS[Math.floor(Math.random() * COLORS.length)],
+            map:      Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0)),
+            explored: Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false)),
+            coins: []
+        };
+
+        generateSolvableMap(cfg.obstacles);
+        placeCoins();
+        updateUI();
+        updateCamera();
+        showScreen('none');
+
+        // Update badge
+        const badge     = document.getElementById('level-badge');
+        const badgeSpan = document.getElementById('badge-label');
+        const dict      = i18n[currentLang];
+        badgeSpan.textContent = dict.badgeLabels[currentLevel];
+        badge.style.setProperty('--badge-color', dict.badgeColors[currentLevel]);
+        badge.classList.add('visible');
+
+        document.getElementById('btn-pause').classList.add('visible');
+        document.getElementById('btn-pause').textContent = '⏸';
+
+        gameState.timerInterval   = setInterval(gameTick,    1000);
+        gameState.minimapInterval = setInterval(drawMinimap, 200);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Map Generation — BFS-validated solvable maze
+    ════════════════════════════════════════════════════════════════════ */
+    function generateSolvableMap(obstacleCount) {
+        const totalCells = GRID_SIZE * GRID_SIZE;
+        const threshold  = Math.floor(totalCells * 0.60);
+        let valid = false;
+
+        while (!valid) {
+            // Reset map
+            for (let y = 0; y < GRID_SIZE; y++)
+                for (let x = 0; x < GRID_SIZE; x++)
+                    gameState.map[y][x] = 0;
+
+            // Place random obstacles
+            for (let i = 0; i < obstacleCount; i++) {
+                gameState.map
+                    [Math.floor(Math.random() * GRID_SIZE)]
+                    [Math.floor(Math.random() * GRID_SIZE)] = 1;
+            }
+
+            // Pick a free starting cell for the player
+            let px, py;
+            do {
+                px = Math.floor(Math.random() * GRID_SIZE);
+                py = Math.floor(Math.random() * GRID_SIZE);
+            } while (gameState.map[py][px] === 1);
+            gameState.player.x = px;
+            gameState.player.y = py;
+
+            // BFS connectivity check
+            let reachable = 0;
+            const q       = [[px, py]];
+            const visited = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+            visited[py][px] = true;
+
+            while (q.length > 0) {
+                const [cx, cy] = q.shift();
+                reachable++;
+                [[0,1],[1,0],[0,-1],[-1,0]].forEach(([dx, dy]) => {
+                    const nx = cx + dx, ny = cy + dy;
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE
+                        && !visited[ny][nx] && gameState.map[ny][nx] === 0) {
+                        visited[ny][nx] = true;
+                        q.push([nx, ny]);
+                    }
+                });
+            }
+
+            if (reachable >= threshold) {
+                valid = true;
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        if (!visited[y][x]) gameState.map[y][x] = 1;
+                        if (gameState.map[y][x] === 1) renderEntity('wall', x, y);
+                    }
+                }
+            }
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Coin Placement
+    ════════════════════════════════════════════════════════════════════ */
+    function getCoinAt(x, y) { return gameState.coins.find(c => c.x === x && c.y === y); }
+
+    function placeCoins() {
+        const place = (type, val, color) => {
+            let x, y, tries = 0;
+            do {
+                x = Math.floor(Math.random() * GRID_SIZE);
+                y = Math.floor(Math.random() * GRID_SIZE);
+                tries++;
+            } while (tries < 500 && (
+                gameState.map[y][x] === 1 || getCoinAt(x, y) ||
+                (x === gameState.player.x && y === gameState.player.y)
+            ));
+            if (tries >= 500) return; // safety bail-out for tiny grids
+
+            const el = document.createElement('div');
+            el.className = `entity coin ${type === 'white' ? 'white' : ''}`;
+            el.style.left = `calc((var(--tile-size) * ${x}) + (var(--tile-size) * 0.2))`;
+            el.style.top  = `calc((var(--tile-size) * ${y}) + (var(--tile-size) * 0.2))`;
+
+            if (type !== 'white') {
+                el.style.backgroundColor = color.hex;
+                el.style.color = '#000';
+                el.innerText = val;
             } else {
-                document.getElementById('lose-score').innerText = gameState.score;
-                playSound('lose');
-                showScreen('lose-screen');
+                el.innerText = '⏱';
+            }
+
+            document.getElementById('camera').appendChild(el);
+            gameState.coins.push({ x, y, type, val, color, el, lastSeen: 0 });
+        };
+
+        // All three color sets: target gets all 10 in order; non-target gets limited random coins
+        COLORS.forEach(c => {
+            if (c.id === gameState.targetColor.id) {
+                // Target color always has all 10 coins numbered 1–10
+                for (let i = 1; i <= 10; i++) place('color', i, c);
+            } else {
+                // Decoy counts per difficulty
+                const decoyCount = currentLevel === 'easy' ? 3 : currentLevel === 'medium' ? 5 : 10;
+                if (decoyCount === 10) {
+                    for (let i = 1; i <= 10; i++) place('color', i, c);
+                } else {
+                    // Pick unique random values from 1-10
+                    const pool = [1,2,3,4,5,6,7,8,9,10];
+                    for (let i = pool.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [pool[i], pool[j]] = [pool[j], pool[i]];
+                    }
+                    pool.slice(0, decoyCount).forEach(v => place('color', v, c));
+                }
+            }
+        });
+
+        // Time-bonus white coins
+        const timeCoins = Math.floor(Math.random() * 3) + 3;
+        for (let i = 0; i < timeCoins; i++) place('white', null, null);
+    }
+
+    function renderEntity(type, x, y) {
+        const el = document.createElement('div');
+        el.className = `entity ${type}`;
+        el.style.left = `calc(var(--tile-size) * ${x})`;
+        el.style.top  = `calc(var(--tile-size) * ${y})`;
+        document.getElementById('camera').appendChild(el);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Game Loop
+    ════════════════════════════════════════════════════════════════════ */
+    function gameTick() {
+        if (!gameState.isRunning || gameState.isPaused) return;
+        gameState.time--;
+        updateUI();
+        if (gameState.time <= 0) endGame(false);
+    }
+
+    function handleMove(dx, dy) {
+        if (!gameState.isRunning || gameState.isPaused) return;
+        const nx = gameState.player.x + dx;
+        const ny = gameState.player.y + dy;
+        if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && gameState.map[ny][nx] !== 1) {
+            gameState.player.x = nx;
+            gameState.player.y = ny;
+            updateCamera();
+            checkCollisions();
+        }
+    }
+
+    function checkCollisions() {
+        const idx = gameState.coins.findIndex(c => c.x === gameState.player.x && c.y === gameState.player.y);
+        if (idx === -1) return;
+        const coin = gameState.coins[idx];
+        if (coin.type === 'white') {
+            gameState.time += 5;
+            playSound('coin');
+            removeCoin(coin, idx);
+        } else if (coin.color.id === gameState.targetColor.id && coin.val === gameState.nextNumber) {
+            gameState.score += coin.val * 2;
+            gameState.nextNumber++;
+            playSound('coin');
+            removeCoin(coin, idx);
+            if (gameState.nextNumber > 10) endGame(true);
+        } else {
+            applyPenalty(coin.val);
+        }
+        updateUI();
+    }
+
+    function applyPenalty(amount) {
+        gameState.score -= amount;
+        playSound('wrong');
+        const vp = document.getElementById('viewport');
+        vp.style.animation = 'none';
+        void vp.offsetWidth;
+        vp.style.animation = 'screenShake 0.2s';
+    }
+
+    function removeCoin(coin, index) {
+        coin.el.remove();
+        gameState.coins.splice(index, 1);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Camera & UI Update
+    ════════════════════════════════════════════════════════════════════ */
+    function updateCamera() {
+        document.getElementById('player-pos').style.transform = `translate(
+            calc((var(--tile-size) * ${gameState.player.x}) + (var(--tile-size) * 0.15)),
+            calc((var(--tile-size) * ${gameState.player.y}) + (var(--tile-size) * 0.15))
+        )`;
+        document.getElementById('camera').style.transform = `translate(
+            calc((var(--vp-cols) * var(--tile-size) / 2) - ((${gameState.player.x} + 0.5) * var(--tile-size))),
+            calc((var(--vp-rows) * var(--tile-size) / 2) - ((${gameState.player.y} + 0.5) * var(--tile-size)))
+        )`;
+    }
+
+    function updateUI() {
+        const mins = Math.floor(gameState.time / 60);
+        const secs = (gameState.time % 60).toString().padStart(2, '0');
+        document.getElementById('ui-time').innerText = `${mins}:${secs}`;
+
+        const tgEl = document.getElementById('ui-target');
+        if (gameState.targetColor) {
+            tgEl.innerText   = gameState.targetColor.id.toUpperCase();
+            tgEl.style.color = gameState.targetColor.hex;
+        }
+
+        document.getElementById('ui-next').innerText  = gameState.nextNumber > 10 ? '✓' : gameState.nextNumber;
+        document.getElementById('ui-score').innerText = gameState.score;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Minimap — dynamic tile size based on grid
+    ════════════════════════════════════════════════════════════════════ */
+    function drawMinimap() {
+        const canvas = document.getElementById('minimap');
+        const ctx    = canvas.getContext('2d');
+        const ms     = Math.floor(160 / GRID_SIZE);  // dynamic: 20 / 16 / 10 for 8/10/16
+        const px     = gameState.player.x;
+        const py     = gameState.player.y;
+        const now    = Date.now();
+
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Reveal fog around player
+        for (let y = py - 1; y <= py + 2; y++)
+            for (let x = px - 1; x <= px + 2; x++)
+                if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE)
+                    gameState.explored[y][x] = true;
+
+        // Draw explored tiles
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                if (gameState.explored[y][x]) {
+                    ctx.fillStyle = gameState.map[y][x] === 1 ? '#ff9900' : '#222';
+                    ctx.fillRect(x * ms, y * ms, ms, ms);
+                }
             }
         }
 
-        // Inputs — keyboard (desktop)
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') togglePause();
-            if (['ArrowUp', 'w', 'W'].includes(e.key)) { e.preventDefault(); handleMove(0, -1); }
-            if (['ArrowDown', 's', 'S'].includes(e.key)) { e.preventDefault(); handleMove(0, 1); }
-            if (['ArrowLeft', 'a', 'A'].includes(e.key)) { e.preventDefault(); handleMove(-1, 0); }
-            if (['ArrowRight', 'd', 'D'].includes(e.key)) { e.preventDefault(); handleMove(1, 0); }
+        // Draw coins (with 5s memory after leaving sight)
+        gameState.coins.forEach(c => {
+            const isVisible = (c.x >= px - 1 && c.x <= px + 2 && c.y >= py - 1 && c.y <= py + 2);
+            if (isVisible) c.lastSeen = now;
+            if (isVisible || (now - c.lastSeen < 5000)) {
+                ctx.fillStyle = c.type === 'white' ? '#fff' : c.color.hex;
+                ctx.beginPath();
+                ctx.arc(c.x * ms + ms / 2, c.y * ms + ms / 2, ms / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         });
 
-        // Swipe controls (mobile / tablet) — attached to the viewport
-        (function() {
-            let sx = 0, sy = 0;
-            const vp = document.getElementById('viewport');
-            vp.addEventListener('touchstart', e => {
-                sx = e.touches[0].clientX;
-                sy = e.touches[0].clientY;
-                e.preventDefault();
-            }, { passive: false });
-            vp.addEventListener('touchend', e => {
-                const dx = e.changedTouches[0].clientX - sx;
-                const dy = e.changedTouches[0].clientY - sy;
-                const threshold = 25;
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    if (dx > threshold) handleMove(1, 0);
-                    else if (dx < -threshold) handleMove(-1, 0);
-                } else {
-                    if (dy > threshold) handleMove(0, 1);
-                    else if (dy < -threshold) handleMove(0, -1);
-                }
-                e.preventDefault();
-            }, { passive: false });
-        })();
+        // Draw player
+        ctx.shadowColor = '#ffff00';
+        ctx.shadowBlur  = 8;
+        ctx.fillStyle   = '#ffff00';
+        ctx.fillRect(px * ms + 1, py * ms + 1, ms - 2, ms - 2);
+        ctx.shadowBlur  = 0;
+    }
 
-        // Ensure resizing window doesn't break the camera visual math
-        window.addEventListener('resize', () => {
-            if(gameState.isRunning) updateCamera();
-        });
+    /* ════════════════════════════════════════════════════════════════════
+       Pause & End Game
+    ════════════════════════════════════════════════════════════════════ */
+    function togglePause() {
+        if (!gameState.isRunning) return;
+        gameState.isPaused = !gameState.isPaused;
+        document.getElementById('btn-pause').textContent = gameState.isPaused ? '▶' : '⏸';
+        showScreen(gameState.isPaused ? 'pause-screen' : 'none');
+    }
 
+    function endGame(won) {
+        gameState.isRunning = false;
+        clearInterval(gameState.timerInterval);
+        clearInterval(gameState.minimapInterval);
+        document.getElementById('btn-pause').classList.remove('visible');
+        document.getElementById('level-badge').classList.remove('visible');
+        if (won) {
+            updateUI();
+            document.getElementById('win-score').innerText = gameState.score;
+            playSound('win');
+            showScreen('win-screen');
+        } else {
+            document.getElementById('lose-score').innerText = gameState.score;
+            playSound('lose');
+            showScreen('lose-screen');
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       Input Handling
+    ════════════════════════════════════════════════════════════════════ */
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') togglePause();
+        if (['ArrowUp',    'w', 'W'].includes(e.key)) { e.preventDefault(); handleMove(0, -1); }
+        if (['ArrowDown',  's', 'S'].includes(e.key)) { e.preventDefault(); handleMove(0,  1); }
+        if (['ArrowLeft',  'a', 'A'].includes(e.key)) { e.preventDefault(); handleMove(-1, 0); }
+        if (['ArrowRight', 'd', 'D'].includes(e.key)) { e.preventDefault(); handleMove(1,  0); }
+    });
+
+    // Swipe controls (mobile)
+    (function () {
+        let sx = 0, sy = 0;
+        const vp = document.getElementById('viewport');
+        vp.addEventListener('touchstart', e => {
+            sx = e.touches[0].clientX;
+            sy = e.touches[0].clientY;
+            e.preventDefault();
+        }, { passive: false });
+        vp.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - sx;
+            const dy = e.changedTouches[0].clientY - sy;
+            const th = 25;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if      (dx >  th) handleMove(1, 0);
+                else if (dx < -th) handleMove(-1, 0);
+            } else {
+                if      (dy >  th) handleMove(0, 1);
+                else if (dy < -th) handleMove(0, -1);
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
+    window.addEventListener('resize', () => { if (gameState.isRunning) updateCamera(); });
     </script>
 </body>
 </html>
