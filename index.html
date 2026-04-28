@@ -72,23 +72,128 @@
 
         #scoreboard {
             background: var(--panel-bg);
-            padding: 10px 20px;
+            padding: 10px 16px;
             border-radius: 12px;
             box-shadow: var(--shadow);
             display: flex;
-            gap: 20px;
+            flex-direction: column;
+            gap: 8px;
             font-size: 18px;
             font-weight: bold;
             width: 100%;
             max-width: 600px;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
         }
 
-        .score-item  { display: flex; flex-direction: column; align-items: center; }
-        .score-label { font-size: 12px; color: #aaa; letter-spacing: 0.5px; }
-        .score-value { font-size: 22px; }
+        .sb-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-item        { display: flex; flex-direction: column; align-items: center; min-width: 54px; }
+        .score-item-wide   { flex: 1; min-width: 0; }
+        .score-label       { font-size: 11px; color: #aaa; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 2px; }
+        .score-value       { font-size: 20px; line-height: 1; }
+
+        /* ── Progress bar ── */
+        #progress-wrap {
+            position: relative;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            height: 24px;
+            width: 100%;
+            min-width: 70px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #progress-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 0%;
+            background: linear-gradient(90deg, #6d28d9, #a78bfa);
+            border-radius: 20px;
+            transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 0 10px rgba(167,139,250,0.45);
+        }
+
+        #progress-fill.progress-pop { animation: progressPop 0.3s ease-out; }
+
+        #progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            letter-spacing: 0.3px;
+            pointer-events: none;
+        }
+
+        /* ── Combo display ── */
+        #ui-combo {
+            display: inline-block;
+            min-width: 2.6ch;
+            text-align: center;
+            color: #a78bfa;
+            transition: color 0.2s;
+        }
+        #ui-combo.combo-x2  { color: #4ade80; }
+        #ui-combo.combo-x3  { color: #facc15; }
+        #ui-combo.combo-high { color: #f87171; }
+        #ui-combo.combo-flash { animation: comboFlash 0.38s ease-out forwards; }
+
+        /* ── Best score glow when beaten ── */
+        #ui-best.new-best { animation: bestGlow 1.2s ease-out; color: #fbbf24; }
+
+        /* ── Time urgency ── */
+        #ui-time.time-critical { animation: timePulse 0.55s infinite alternate; color: var(--red-coin); }
+
+        /* ── Score popup ── */
+        .score-popup {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 108px;
+            font-size: 17px;
+            font-weight: 900;
+            color: #ffcc00;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.85), 0 0 14px rgba(255,204,0,0.45);
+            pointer-events: none;
+            z-index: 3000;
+            animation: popupFloat 0.95s ease-out forwards;
+            white-space: nowrap;
+        }
+        .score-popup.penalty {
+            color: var(--red-coin);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.85), 0 0 14px rgba(255,51,102,0.45);
+            font-size: 15px;
+        }
+
+        /* ── New Best banner ── */
+        #new-best-banner {
+            position: fixed;
+            top: 68px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #1e1e2f;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            z-index: 3500;
+            pointer-events: none;
+            opacity: 0;
+            box-shadow: 0 0 18px rgba(251,191,36,0.7);
+        }
+        #new-best-banner.show { animation: newBestFlash 2s ease-out forwards; }
 
         #main-area {
             display: flex;
@@ -372,13 +477,24 @@
         @keyframes pulse-white { 0%   { box-shadow: 0 0 10px #fff; }            100% { box-shadow: 0 0 30px #fff; transform: scale(1.1); } }
         @keyframes popIn       { 0%   { transform: scale(0.85); opacity: 0; }  100% { transform: scale(1); opacity: 1; } }
         @keyframes screenShake { 0%   { transform: translate(0); } 25% { transform: translate(-5px, 5px); } 50% { transform: translate(5px,-5px); } 75% { transform: translate(-5px,-5px); } 100% { transform: translate(0); } }
+        @keyframes comboFlash  { 0% { transform: scale(1.55); filter: brightness(2); } 100% { transform: scale(1); filter: brightness(1); } }
+        @keyframes timePulse   { 0% { opacity: 1; } 100% { opacity: 0.45; } }
+        @keyframes popupFloat  { 0% { opacity: 1; top: 108px; } 70% { opacity: 1; } 100% { opacity: 0; top: 55px; } }
+        @keyframes newBestFlash { 0% { opacity: 0; transform: translateX(-50%) scale(0.6); } 18% { opacity: 1; transform: translateX(-50%) scale(1.08); } 75% { opacity: 1; transform: translateX(-50%) scale(1); } 100% { opacity: 0; transform: translateX(-50%) scale(0.9); } }
+        @keyframes progressPop { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.18); } }
+        @keyframes bestGlow    { 0%,100% { text-shadow: none; } 40% { text-shadow: 0 0 14px #fbbf24; } }
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
             :root { --tile-size: 58px; --vp-cols: 5; --vp-rows: 4; }
             #main-area { flex-direction: column; align-items: center; }
-            #scoreboard { font-size: 13px; padding: 8px 12px; gap: 10px; }
-            .score-value { font-size: 18px; }
+            #scoreboard { font-size: 13px; padding: 8px 12px; gap: 6px; }
+            .score-value { font-size: 16px; }
+            .score-label { font-size: 10px; }
+            #progress-wrap { height: 20px; }
+            #progress-text { font-size: 10px; }
+            .score-popup { font-size: 14px; top: 90px; }
+            #new-best-banner { top: 56px; font-size: 11px; }
             .modal { padding: 22px 18px; }
             .level-cards { gap: 8px; }
             .level-card { padding: 14px 6px; }
@@ -396,24 +512,44 @@
     <button id="btn-mute" title="Toggle sound">🔊</button>
     <button id="btn-pause" onclick="togglePause()" title="Pause">⏸</button>
 
+    <!-- ── New Best banner (fixed, appears above scoreboard) ── -->
+    <div id="new-best-banner">🏆 NEW BEST!</div>
+
     <!-- ── Game Area ── -->
     <div id="game-container">
         <header id="scoreboard">
-            <div class="score-item">
-                <span class="score-label" data-i18n="timeLabel">TIME</span>
-                <span id="ui-time" class="score-value">1:00</span>
+            <!-- Row 1: Time | Score | Best -->
+            <div class="sb-row">
+                <div class="score-item">
+                    <span class="score-label" data-i18n="timeLabel">TIME</span>
+                    <span id="ui-time" class="score-value">1:00</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label" data-i18n="scoreLabel">SCORE</span>
+                    <span id="ui-score" class="score-value">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label" data-i18n="bestLabel">BEST</span>
+                    <span id="ui-best" class="score-value" style="color:var(--accent)">0</span>
+                </div>
             </div>
-            <div class="score-item">
-                <span class="score-label" data-i18n="targetLabel">TARGET</span>
-                <span id="ui-target" class="score-value" style="text-shadow: 0 0 10px currentColor;">RED</span>
-            </div>
-            <div class="score-item">
-                <span class="score-label" data-i18n="nextLabel">NEXT</span>
-                <span id="ui-next" class="score-value">1</span>
-            </div>
-            <div class="score-item">
-                <span class="score-label" data-i18n="scoreLabel">SCORE</span>
-                <span id="ui-score" class="score-value">0</span>
+            <!-- Row 2: Target | Progress bar | Combo -->
+            <div class="sb-row">
+                <div class="score-item">
+                    <span class="score-label" data-i18n="targetLabel">TARGET</span>
+                    <span id="ui-target" class="score-value" style="text-shadow: 0 0 10px currentColor;">RED</span>
+                </div>
+                <div class="score-item score-item-wide">
+                    <span class="score-label" data-i18n="progressLabel">PROGRESS</span>
+                    <div id="progress-wrap">
+                        <div id="progress-fill"></div>
+                        <span id="progress-text">0/10</span>
+                    </div>
+                </div>
+                <div class="score-item">
+                    <span class="score-label" data-i18n="comboLabel">COMBO</span>
+                    <span id="ui-combo" class="score-value">×1</span>
+                </div>
             </div>
         </header>
 
@@ -533,6 +669,7 @@
             <p style="font-size:26px; font-weight:bold; color:#ffcc00; margin-bottom:4px;">
                 <span data-i18n="scoreWord">Score</span>: <span id="win-score">0</span>
             </p>
+            <p id="win-best-line" style="font-size:13px; color:var(--accent); margin-bottom:16px; min-height:18px;"></p>
             <div class="modal-btns">
                 <button class="btn btn-primary" onclick="showScreen('level-select')" data-i18n="playAgainBtn">Play Again</button>
                 <button class="btn" onclick="goToMenu()" data-i18n="exitBtn">Exit</button>
@@ -550,6 +687,7 @@
             <p style="font-size:26px; font-weight:bold; color:#ffcc00; margin-bottom:4px;">
                 <span data-i18n="scoreWord">Score</span>: <span id="lose-score">0</span>
             </p>
+            <p id="lose-best-line" style="font-size:13px; color:var(--accent); margin-bottom:16px; min-height:18px;"></p>
             <div class="modal-btns">
                 <button class="btn btn-primary" onclick="showScreen('level-select')" data-i18n="tryAgainBtn">Try Again</button>
                 <button class="btn" onclick="goToMenu()" data-i18n="exitBtn">Exit</button>
@@ -584,7 +722,9 @@
             backBtn:         '← Back',
             timeLabel:       'TIME',
             targetLabel:     'TARGET',
-            nextLabel:       'NEXT',
+            progressLabel:   'PROGRESS',
+            comboLabel:      'COMBO',
+            bestLabel:       'BEST',
             scoreLabel:      'SCORE',
             scoreWord:       'Score',
             pausedTitle:     '⏸ Paused',
@@ -624,7 +764,9 @@
             backBtn:         '← পিছনে',
             timeLabel:       'সময়',
             targetLabel:     'লক্ষ্য রঙ',
-            nextLabel:       'পরবর্তী',
+            progressLabel:   'অগ্রগতি',
+            comboLabel:      'কম্বো',
+            bestLabel:       'সেরা',
             scoreLabel:      'স্কোর',
             scoreWord:       'স্কোর',
             pausedTitle:     '⏸ পজ',
@@ -695,7 +837,8 @@
         targetColor: null, nextNumber: 1,
         player: { x: 0, y: 0 },
         map: [], coins: [], explored: [],
-        timerInterval: null, minimapInterval: null
+        timerInterval: null, minimapInterval: null,
+        combo: 1, lastCoinTime: 0, newBestReached: false
     };
 
     /* ════════════════════════════════════════════════════════════════════
@@ -814,12 +957,27 @@
             targetColor: COLORS[Math.floor(Math.random() * COLORS.length)],
             map:      Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0)),
             explored: Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false)),
-            coins: []
+            coins: [],
+            combo: 1, lastCoinTime: 0, newBestReached: false
         };
 
         generateSolvableMap(cfg.obstacles);
         placeCoins();
         updateUI();
+
+        // ── Reset progress bar ──
+        document.getElementById('progress-fill').style.width = '0%';
+        document.getElementById('progress-fill').style.transition = 'none';
+        document.getElementById('progress-text').innerText = '0/10';
+        // Re-enable transition after reset tick
+        requestAnimationFrame(() => {
+            document.getElementById('progress-fill').style.transition = '';
+        });
+
+        // ── Show best for this level ──
+        const bestKey = 'chromaBest_' + currentLevel;
+        document.getElementById('ui-best').innerText = localStorage.getItem(bestKey) || '0';
+
         updateCamera();
         showScreen('none');
 
@@ -970,6 +1128,39 @@
     }
 
     /* ════════════════════════════════════════════════════════════════════
+       Visual Feedback Helpers
+    ════════════════════════════════════════════════════════════════════ */
+    function showScorePopup(text, isPenalty) {
+        const el = document.createElement('div');
+        el.className = 'score-popup' + (isPenalty ? ' penalty' : '');
+        el.textContent = text;
+        document.body.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+    }
+
+    function flashCombo() {
+        const el = document.getElementById('ui-combo');
+        el.classList.remove('combo-flash');
+        void el.offsetWidth;
+        el.classList.add('combo-flash');
+        el.addEventListener('animationend', () => el.classList.remove('combo-flash'), { once: true });
+    }
+
+    function triggerNewBestBanner() {
+        const banner = document.getElementById('new-best-banner');
+        banner.classList.remove('show');
+        void banner.offsetWidth;
+        banner.classList.add('show');
+        // Pulse the best score display
+        const bestEl = document.getElementById('ui-best');
+        bestEl.classList.remove('new-best');
+        void bestEl.offsetWidth;
+        bestEl.classList.add('new-best');
+        banner.addEventListener('animationend', () => banner.classList.remove('show'), { once: true });
+        bestEl.addEventListener('animationend', () => bestEl.classList.remove('new-best'), { once: true });
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
        Game Loop
     ════════════════════════════════════════════════════════════════════ */
     function gameTick() {
@@ -998,12 +1189,37 @@
         if (coin.type === 'white') {
             gameState.time += 5;
             playSound('coin');
+            showScorePopup('+5s ⏱', false);
             removeCoin(coin, idx);
         } else if (coin.color.id === gameState.targetColor.id && coin.val === gameState.nextNumber) {
-            gameState.score += coin.val * 2;
-            gameState.nextNumber++;
+            // ── Combo logic ──
+            const now = Date.now();
+            const COMBO_WINDOW = 5000; // ms between correct picks to maintain combo
+            if (now - gameState.lastCoinTime > COMBO_WINDOW) {
+                gameState.combo = 1; // gap too long, reset
+            } else {
+                gameState.combo = Math.min(gameState.combo + 1, 6);
+            }
+            gameState.lastCoinTime = now;
+
+            const gain = coin.val * 10 * gameState.combo;
+            gameState.score += gain;
+
+            // Check for new best live
+            const bestKey = 'chromaBest_' + currentLevel;
+            const curBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
+            if (gameState.score > curBest && !gameState.newBestReached) {
+                gameState.newBestReached = true;
+                triggerNewBestBanner();
+            }
+
+            const comboStr = gameState.combo > 1 ? ` ×${gameState.combo}` : '';
+            showScorePopup(`+${gain}${comboStr}`, false);
+            flashCombo();
             playSound('coin');
             removeCoin(coin, idx);
+            gameState.nextNumber++;
+            updateProgress();
             if (gameState.nextNumber > 10) endGame(true);
         } else {
             applyPenalty(coin.val);
@@ -1012,12 +1228,17 @@
     }
 
     function applyPenalty(amount) {
-        gameState.score -= amount;
+        const penalty = amount * 15;
+        gameState.score = Math.max(0, gameState.score - penalty);
+        gameState.combo = 1; // reset combo on wrong coin
+        gameState.lastCoinTime = 0;
+        showScorePopup(`−${penalty}`, true);
         playSound('wrong');
         const vp = document.getElementById('viewport');
         vp.style.animation = 'none';
         void vp.offsetWidth;
         vp.style.animation = 'screenShake 0.2s';
+        updateUI();
     }
 
     function removeCoin(coin, index) {
@@ -1040,18 +1261,49 @@
     }
 
     function updateUI() {
+        // ── Time ──
         const mins = Math.floor(gameState.time / 60);
         const secs = (gameState.time % 60).toString().padStart(2, '0');
-        document.getElementById('ui-time').innerText = `${mins}:${secs}`;
+        const timeEl = document.getElementById('ui-time');
+        timeEl.innerText = `${mins}:${secs}`;
+        if (gameState.time <= 10) timeEl.classList.add('time-critical');
+        else timeEl.classList.remove('time-critical');
 
+        // ── Target color ──
         const tgEl = document.getElementById('ui-target');
         if (gameState.targetColor) {
             tgEl.innerText   = gameState.targetColor.id.toUpperCase();
             tgEl.style.color = gameState.targetColor.hex;
         }
 
-        document.getElementById('ui-next').innerText  = gameState.nextNumber > 10 ? '✓' : gameState.nextNumber;
+        // ── Score ──
         document.getElementById('ui-score').innerText = gameState.score;
+
+        // ── Best score ──
+        const bestKey = 'chromaBest_' + currentLevel;
+        const curBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
+        document.getElementById('ui-best').innerText = curBest;
+
+        // ── Combo ──
+        const comboEl = document.getElementById('ui-combo');
+        comboEl.innerText = `×${gameState.combo}`;
+        comboEl.className = 'score-value';
+        if      (gameState.combo >= 4) comboEl.classList.add('combo-high');
+        else if (gameState.combo === 3) comboEl.classList.add('combo-x3');
+        else if (gameState.combo === 2) comboEl.classList.add('combo-x2');
+    }
+
+    function updateProgress() {
+        const collected = gameState.nextNumber - 1; // nextNumber just incremented
+        const pct = Math.min((collected / 10) * 100, 100);
+        const fill = document.getElementById('progress-fill');
+        const text = document.getElementById('progress-text');
+        fill.style.width = pct + '%';
+        text.innerText = `${collected}/10`;
+        // Animate pop
+        fill.classList.remove('progress-pop');
+        void fill.offsetWidth;
+        fill.classList.add('progress-pop');
     }
 
     /* ════════════════════════════════════════════════════════════════════
@@ -1120,13 +1372,29 @@
         clearInterval(gameState.minimapInterval);
         document.getElementById('btn-pause').classList.remove('visible');
         document.getElementById('level-badge').classList.remove('visible');
+
+        // ── Save best score ──
+        const bestKey = 'chromaBest_' + currentLevel;
+        const prevBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
+        const isNewBest = gameState.score > prevBest;
+        if (isNewBest) localStorage.setItem(bestKey, gameState.score);
+        const displayBest = isNewBest ? gameState.score : prevBest;
+
         if (won) {
             updateUI();
             document.getElementById('win-score').innerText = gameState.score;
+            document.getElementById('win-best-line').innerText = isNewBest
+                ? '🏆 New best score!'
+                : `Best: ${displayBest}`;
+            document.getElementById('win-best-line').style.color = isNewBest ? '#fbbf24' : 'var(--accent)';
             playSound('win');
             showScreen('win-screen');
         } else {
             document.getElementById('lose-score').innerText = gameState.score;
+            document.getElementById('lose-best-line').innerText = isNewBest
+                ? '🏆 New best score!'
+                : `Best: ${displayBest}`;
+            document.getElementById('lose-best-line').style.color = isNewBest ? '#fbbf24' : 'var(--accent)';
             playSound('lose');
             showScreen('lose-screen');
         }
